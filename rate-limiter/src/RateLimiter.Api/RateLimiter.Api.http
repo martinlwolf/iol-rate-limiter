@@ -1,0 +1,19 @@
+# Requests de demo. Se ejecutan con un clic desde VS Code (extensión REST Client), Visual Studio o Rider.
+# Antes: levantar la API con  dotnet run --project src/RateLimiter.Api
+# Las reglas están en appsettings.json: login = TokenBucket 5/min, orders = SlidingWindowCounter 10/min.
+
+@host = http://localhost:5233
+
+### Login (regla "login", token bucket, 5 por minuto).
+# Ejecutalo 6 veces seguidas: las primeras 5 dan 200 (mirá X-Ratelimit-Remaining bajar de 4 a 0)
+# y la 6ª da 429 con X-Ratelimit-Retry-After: 12 (se recarga 1 token cada 12 s).
+POST {{host}}/api/login
+
+### Orders (regla "orders", sliding window counter, 10 por minuto).
+GET {{host}}/api/orders
+
+### Otra ruta del mismo controller: comparte el contador con /api/orders.
+GET {{host}}/api/orders/42
+
+### Health: sin [RateLimit]. Nunca da 429 y no lleva headers X-Ratelimit-*.
+GET {{host}}/api/health
